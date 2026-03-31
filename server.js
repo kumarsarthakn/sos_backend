@@ -3,7 +3,7 @@ const app = express();
 
 const twilio = require("twilio");
 
-// 🔐 REPLACE THESE
+// 🔐 Your credentials (keep as is for now)
 const accountSid = "ACfe2e6e19a4156c0c49999b1bb5d84e74";
 const authToken = "09bdd23506e5c7492d2eaa27ec1ececd";
 
@@ -11,6 +11,7 @@ const client = twilio(accountSid, authToken);
 
 app.use(express.json());
 
+// 📍 Locations
 const locations = {
   N: "Home",
   V: "School",
@@ -18,12 +19,13 @@ const locations = {
   G: "Park"
 };
 
-app.post("/sos", async (req, res) => {
-  try {
-    const key = req.body.sosKey || "N";
-    const locationText = locations[key] || locations["N"];
+// 📱 Numbers
+const toNumber = "+917005438027";
+const fromNumber = "+12602766298";
 
-    const message = `
+// 🔥 COMMON FUNCTION (clean)
+async function sendSOS(locationText) {
+  const message = `
 🚨 SOS ALERT 🚨
 
 User: SmartSprint User
@@ -32,34 +34,59 @@ Needs immediate help!
 📍 Location: ${locationText}
 `;
 
-    const toNumber = "+917005438027"; // your number
-    const fromNumber = "+12602766298"; // twilio number
+  // SMS
+  await client.messages.create({
+    body: message,
+    from: fromNumber,
+    to: toNumber
+  });
 
-    await client.messages.create({
-      body: message,
-      from: fromNumber,
-      to: toNumber
-    });
+  // WhatsApp
+  await client.messages.create({
+    body: message,
+    from: "whatsapp:+14155238886",
+    to: `whatsapp:+917005438027`
+  });
 
-    await client.messages.create({
-      body: message,
-      from: "whatsapp:+14155238886",
-      to: `whatsapp:${toNumber}`
-    });
-
-    await client.calls.create({
-      twiml: `
+  // Call
+  await client.calls.create({
+    twiml: `
 <Response>
   <Say voice="alice">
     Emergency alert. SmartSprint user needs help. Location is ${locationText}.
   </Say>
 </Response>
 `,
-      to: toNumber,
-      from: fromNumber
-    });
+    to: toNumber,
+    from: fromNumber
+  });
+}
 
-    res.send("SOS sent");
+// ✅ GET (for browser testing)
+app.get("/sos", async (req, res) => {
+  try {
+    const key = req.query.key || "N";
+    const locationText = locations[key] || locations["N"];
+
+    await sendSOS(locationText);
+
+    res.send("SOS sent (GET)");
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error");
+  }
+});
+
+// ✅ POST (for your website/ESP later)
+app.post("/sos", async (req, res) => {
+  try {
+    const key = req.body.sosKey || "N";
+    const locationText = locations[key] || locations["N"];
+
+    await sendSOS(locationText);
+
+    res.send("SOS sent (POST)");
 
   } catch (err) {
     console.error(err);
