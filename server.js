@@ -20,7 +20,7 @@ const locations = {
 };
 
 // 📱 Numbers
-const toNumber = "+917005438027";
+const toNumber = "+917303057483";
 const fromNumber = "+12602766298";
 
 // 🔥 COMMON FUNCTION (clean)
