@@ -34,12 +34,48 @@ Needs immediate help!
 📍 Location: ${locationText}
 `;
 
-  // SMS
-  await client.messages.create({
-    body: message,
-    from: fromNumber,
-    to: toNumber
-  });
+  // ✅ SMS FIRST
+  try {
+    await client.messages.create({
+      body: message,
+      from: fromNumber,
+      to: toNumber
+    });
+    console.log("SMS sent");
+  } catch (e) {
+    console.error("SMS error:", e.message);
+  }
+
+  // ✅ CALL SECOND
+  try {
+    await client.calls.create({
+      twiml: `
+<Response>
+  <Say voice="alice">
+    Emergency alert. SmartSprint user needs help. Location is ${locationText}.
+  </Say>
+</Response>
+`,
+      to: toNumber,
+      from: fromNumber
+    });
+    console.log("Call made");
+  } catch (e) {
+    console.error("Call error:", e.message);
+  }
+
+  // ✅ WHATSAPP LAST
+  try {
+    await client.messages.create({
+      body: message,
+      from: "whatsapp:+14155238886",
+      to: `whatsapp:${toNumber}`
+    });
+    console.log("WhatsApp sent");
+  } catch (e) {
+    console.error("WhatsApp error:", e.message);
+  }
+}
 
   // WhatsApp
   await client.messages.create({
