@@ -3,14 +3,9 @@ const app = express();
 
 const twilio = require("twilio");
 
-// 🔐 Your credentials (keep as is for now)
+// 🔐 Credentials
 const accountSid = "ACfe2e6e19a4156c0c49999b1bb5d84e74";
 const authToken = "3b2a4b6fd4ea5fd4821c152968c644fe";
-
-const express = require("express");
-const app = express();
-
-const twilio = require("twilio");
 
 const client = twilio(accountSid, authToken);
 
@@ -28,7 +23,7 @@ const locations = {
 const toNumber = "+917303057483";
 const fromNumber = "+12602766298";
 
-// 🔥 CLEAN FUNCTION
+// 🔥 FUNCTION
 async function sendSOS(locationText) {
   const message = `
 🚨 SOS ALERT 🚨
@@ -36,7 +31,6 @@ User: SmartSprint User
 Location: ${locationText}
 `;
 
-  // SMS
   try {
     await client.messages.create({
       body: message,
@@ -48,7 +42,6 @@ Location: ${locationText}
     console.error("SMS error:", e.message);
   }
 
-  // CALL
   try {
     await client.calls.create({
       twiml: `<Response><Say>Emergency alert. Location is ${locationText}</Say></Response>`,
@@ -60,7 +53,6 @@ Location: ${locationText}
     console.error("Call error:", e.message);
   }
 
-  // WHATSAPP
   try {
     await client.messages.create({
       body: message,
