@@ -9,6 +9,19 @@ const authToken = "92d1a6272ecbe6980ac11c008276f28b";
 
 const client = twilio(accountSid, authToken);
 
+// 🔥 CORS FIX (VERY IMPORTANT)
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
 app.use(express.json());
 
 // 📍 Locations
