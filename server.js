@@ -7,6 +7,11 @@ const twilio = require("twilio");
 const accountSid = "ACfe2e6e19a4156c0c49999b1bb5d84e74";
 const authToken = "3b2a4b6fd4ea5fd4821c152968c644fe";
 
+const express = require("express");
+const app = express();
+
+const twilio = require("twilio");
+
 const client = twilio(accountSid, authToken);
 
 app.use(express.json());
@@ -23,7 +28,7 @@ const locations = {
 const toNumber = "+917303057483";
 const fromNumber = "+12602766298";
 
-// 🔥 COMMON FUNCTION (clean)
+// 🔥 CLEAN FUNCTION
 async function sendSOS(locationText) {
   const message = `
 🚨 SOS ALERT 🚨
@@ -31,6 +36,7 @@ User: SmartSprint User
 Location: ${locationText}
 `;
 
+  // SMS
   try {
     await client.messages.create({
       body: message,
@@ -42,6 +48,7 @@ Location: ${locationText}
     console.error("SMS error:", e.message);
   }
 
+  // CALL
   try {
     await client.calls.create({
       twiml: `<Response><Say>Emergency alert. Location is ${locationText}</Say></Response>`,
@@ -53,6 +60,7 @@ Location: ${locationText}
     console.error("Call error:", e.message);
   }
 
+  // WHATSAPP
   try {
     await client.messages.create({
       body: message,
@@ -64,41 +72,8 @@ Location: ${locationText}
     console.error("WhatsApp error:", e.message);
   }
 }
-  // ✅ WHATSAPP LAST
-  try {
-    await client.messages.create({
-      body: message,
-      from: "whatsapp:+14155238886",
-      to: `whatsapp:${toNumber}`
-    });
-    console.log("WhatsApp sent");
-  } catch (e) {
-    console.error("WhatsApp error:", e.message);
-  }
-}
 
-  // WhatsApp
-  await client.messages.create({
-    body: message,
-    from: "whatsapp:+14155238886",
-    to: `whatsapp:+917303057483`
-  });
-
-  // Call
-  await client.calls.create({
-    twiml: `
-<Response>
-  <Say voice="alice">
-    Emergency alert. SmartSprint user needs help. Location is ${locationText}.
-  </Say>
-</Response>
-`,
-    to: toNumber,
-    from: fromNumber
-  });
-}
-
-// ✅ GET (for browser testing)
+// ✅ GET
 app.get("/sos", async (req, res) => {
   try {
     const key = req.query.key || "N";
@@ -107,14 +82,13 @@ app.get("/sos", async (req, res) => {
     await sendSOS(locationText);
 
     res.send("SOS sent (GET)");
-
   } catch (err) {
     console.error(err);
     res.status(500).send("Error");
   }
 });
 
-// ✅ POST (for your website/ESP later)
+// ✅ POST
 app.post("/sos", async (req, res) => {
   try {
     const key = req.body.sosKey || "N";
@@ -123,7 +97,6 @@ app.post("/sos", async (req, res) => {
     await sendSOS(locationText);
 
     res.send("SOS sent (POST)");
-
   } catch (err) {
     console.error(err);
     res.status(500).send("Error");
