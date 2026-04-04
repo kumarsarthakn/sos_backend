@@ -27,14 +27,10 @@ const fromNumber = "+12602766298";
 async function sendSOS(locationText) {
   const message = `
 🚨 SOS ALERT 🚨
-
 User: SmartSprint User
-Needs immediate help!
-
-📍 Location: ${locationText}
+Location: ${locationText}
 `;
 
-  // ✅ SMS FIRST
   try {
     await client.messages.create({
       body: message,
@@ -46,16 +42,9 @@ Needs immediate help!
     console.error("SMS error:", e.message);
   }
 
-  // ✅ CALL SECOND
   try {
     await client.calls.create({
-      twiml: `
-<Response>
-  <Say voice="alice">
-    Emergency alert. SmartSprint user needs help. Location is ${locationText}.
-  </Say>
-</Response>
-`,
+      twiml: `<Response><Say>Emergency alert. Location is ${locationText}</Say></Response>`,
       to: toNumber,
       from: fromNumber
     });
@@ -64,6 +53,17 @@ Needs immediate help!
     console.error("Call error:", e.message);
   }
 
+  try {
+    await client.messages.create({
+      body: message,
+      from: "whatsapp:+14155238886",
+      to: `whatsapp:${toNumber}`
+    });
+    console.log("WhatsApp sent");
+  } catch (e) {
+    console.error("WhatsApp error:", e.message);
+  }
+}
   // ✅ WHATSAPP LAST
   try {
     await client.messages.create({
